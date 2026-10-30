@@ -1,10 +1,12 @@
 # BastionGlass
 
-**Small, inspectable security observations for owner-controlled AI workspaces.**
+**Building an auditable defense platform for owner-controlled AI workspaces.**
 
 BastionGlass is an early, dependency-free defensive prototype. It helps review explicitly selected source files, notice selected runtime patch gaps, compare reviewed file hashes and test privacy-preserving traffic-metadata rules against synthetic events.
 
-It is **not** an antivirus, EDR, firewall, sandbox, network monitor, security certification or proof that a workspace is safe. It cannot guarantee freedom from present or future vulnerabilities. No live packet capture, TLS interception, account access, automatic incident submission or automatic remediation is implemented.
+The intended platform includes malware detection, endpoint detection and response (EDR), firewall/policy enforcement, sandbox integration, network visibility and approved incident response. These are **development goals, not capabilities delivered by v0.1.0**. Live packet capture, TLS interception, service/account integration, automatic incident submission and automatic remediation are not yet implemented or enabled. See the [capability roadmap and release gates](docs/ROADMAP.md).
+
+Independent security assessment and, where appropriate, external certification are goals; neither is currently held. No assessment, certification or future feature can prove a workspace safe or guarantee freedom from present or future vulnerabilities.
 
 ## What works in v0.1.0
 
@@ -15,6 +17,10 @@ It is **not** an antivirus, EDR, firewall, sandbox, network monitor, security ce
 - Read-only comparison against a separately reviewed, manifest-bound hash baseline. Hash matches never establish safety.
 - Strict **synthetic-only** traffic-event analysis. It rejects payload, URL, hostname, IP, cookie and credential fields instead of attempting unreliable redaction.
 - No application network calls, subprocess execution, package installation, privilege changes, file modification, self-update or external reporting.
+
+## Target capabilities
+
+The [roadmap](docs/ROADMAP.md) separates implemented observations from planned prevention, detection and response. New integrations require supported provider interfaces, explicit permission boundaries, privacy tests and owner-controlled rollback. The project aims to become comprehensive without claiming unbuilt capabilities.
 
 ## Run without installing
 

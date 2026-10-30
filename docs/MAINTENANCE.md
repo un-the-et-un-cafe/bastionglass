@@ -12,6 +12,8 @@
 
 No unattended rule download, generated-code execution, model-driven patching, automatic baseline acceptance or automatic privilege escalation is implemented. Daily research can propose changes; it does not authorize deploying them. Owner pause/stop takes precedence over recovery or scheduled checks.
 
+The [capability roadmap](ROADMAP.md) describes broader future integrations. Each phase must extend this matrix and the threat model before adoption; reviewed evolution is not unrestricted self-modification.
+
 ## Compatibility matrix
 
 | Surface | v0 evidence | Required future check |

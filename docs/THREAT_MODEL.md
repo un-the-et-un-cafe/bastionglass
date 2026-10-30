@@ -31,8 +31,10 @@ The synthetic traffic API accepts bytes directly, validates a fixed JSON schema 
 
 128 files; 256 KiB per file; 4 MiB total source bytes read, including failed/raced reads; 512 UTF-8 bytes per relative path and at most 12 components. Source reports contain at most six rule entries per observed file. Traffic fixtures: 64 KiB, at most 256 events, maximum 2^30 bytes as a numeric measurement per event. These are **input limits**, not CPU/RAM quotas enforced by an external sandbox.
 
-## Explicit non-goals
+## Current scope and enduring boundaries
 
-No perfect security or uptime guarantee, no anti-forensics, no bypassing platform shutdown/oversight, no persistence beyond requested artifacts, no account/credential/compute acquisition. No exploit execution, kernel probing, packet sniffing, TLS man-in-the-middle, eBPF, VPN, host firewall changes, malware detonation or automatic deletion/quarantine. No proof that a container cannot escape or that the host is patched.
+v0.1.0 does not implement exploit execution, kernel probing, live packet inspection, TLS interception, eBPF, VPN integration, host firewall changes, malware detonation or automatic deletion/quarantine. This describes today's implementation, not a permanent exclusion of defensive capabilities. The [roadmap](ROADMAP.md) defines future detection, enforcement, network visibility and response work with separate permission and validation gates. No future capability is authorized merely by appearing on that roadmap.
+
+Enduring constraints: no perfect security or uptime guarantee, anti-forensics, bypassing platform shutdown/oversight, unauthorized persistence, or acquisition of accounts, credentials or compute by the suite. Owner-authorized service integration may use scoped credentials through supported secret storage; it must not harvest login sessions or bypass provider restrictions. No version can prove that a container cannot escape or that an unobserved host is patched. Recovery and remediation must honor the owner's stop/pause and platform controls.
 
 An empty finding list means only that the selected patterns did not match the selected readable files. It must never be rewritten as “no malware,” “vulnerability-free,” or “all traffic secure.”
