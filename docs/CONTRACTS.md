@@ -10,6 +10,8 @@ A file record contains its **manifest index**, status, and either a fixed reject
 
 `complete` covers requested file observations, not complete vulnerability coverage. `candidate_findings` counts matching rule categories across files, not proven vulnerabilities or affected lines. Each category's `matches` caps at 1,000; `matches_capped` declares truncation. File hashing uses SHA-256; this is integrity comparison, not authentication.
 
+Successful reads require both stable descriptor metadata and a byte count equal to the initial file size. An unexpected early EOF returns `incomplete_file_read`, omits the partial hash/findings, and retains consumed bytes in the total read budget. Ordinary short chunks are allowed when their accumulated length reaches the expected size. This consistency check is not an atomic snapshot or protection against every concurrent modification.
+
 ## Baseline comparison
 
 `compare_baseline(report, approved_baseline)` requires a baseline object with exactly `manifest_sha256` and `hashes` (ordered SHA-256 strings, one per manifest file). This is an in-memory API, not a loader or trust store. Only pass a report produced by the suite and a separately reviewed baseline. Mismatched/incomplete scopes return `not_comparable`; altered content returns changed indices. The function never writes, signs, approves, creates or updates a baseline.

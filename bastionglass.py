@@ -146,6 +146,8 @@ def read_source(project_fd: int, relative: str, limit: int = MAX_FILE_BYTES, *, 
         after = os.fstat(fd)
         if (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns) != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns):
             reject("file_changed_during_read")
+        if count != before.st_size:
+            reject("incomplete_file_read")
         return b"".join(chunks)
     except OSError:
         reject("file_unavailable")

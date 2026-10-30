@@ -2,7 +2,26 @@
 
 Candidate date: 2026-10-30. This file records reproducible local checks, not certification.
 
-## Executed
+## GitHub checks
+
+The pull-request workflow runs unit tests, Python compilation and patch whitespace checks on standard Ubuntu 24.04 runners with Python 3.12 and 3.14. This samples the documented Python 3.12+ range; it is not an exhaustive platform matrix. Python patch versions are resolved from the latest available patch within each selected minor and printed in the run log.
+
+Official checkout/setup actions are pinned to complete commit IDs. The workflow grants only `contents: read`, does not persist checkout credentials, installs no project dependencies, and does not use secrets, deployment, packet capture or `pull_request_target`. PR-only triggers avoid duplicate branch-push runs; superseded PR runs are cancelled. Hosted success must be verified for the exact current PR head; the presence of this workflow is not a passing result.
+
+Action pins verified against the maintainers' release tags and action definitions on 2026-10-30:
+
+- [actions/checkout v7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1): `3d3c42e5aac5ba805825da76410c181273ba90b1`.
+- [actions/setup-python v7.1.0](https://github.com/actions/setup-python/releases/tag/v7.1.0): `6d4fd22b20465ccc0f7354476588e8df7c9ca0e0`.
+
+## Current private read-completeness increment
+
+- `python3 -m unittest discover -s tests -v`: **46 tests passed** on Python 3.12.14.
+- Four added tests exercise unexpected EOF without a metadata change, partial-read accounting without a returned hash, legitimate short chunks and empty files.
+- `python3 -m py_compile bastionglass.py tests/test_bastionglass.py` and `git diff --check`: passed.
+- The unchanged 42-test suite below remains historical evidence for the earlier candidate. This increment requires independent review before publication.
+- Runtime patch-review flags remain unresolved; these trusted synthetic tests do not establish that the interpreter or host is fully patched.
+
+## Earlier candidate checks
 
 - `python3 -m unittest discover -s tests -v`: **42 tests passed**.
 - `python3 -m py_compile bastionglass.py tests/test_bastionglass.py`: passed.

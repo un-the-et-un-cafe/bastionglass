@@ -43,6 +43,36 @@ class Suite(unittest.TestCase):
         self.assertEqual(coverage["provider_connector_traffic"], "not_observed")
         self.assertEqual(coverage["external_reporting"], "disabled")
 
+    def test_early_eof_is_not_a_complete_observation(self):
+        with patch.object(bg.os, "read", return_value=b""):
+            report = self.scan()
+        self.assertFalse(report["complete"])
+        self.assertEqual(report["bytes_read"], 0)
+        self.assertEqual(report["files"], [{"file_index": 0, "status": "not_scanned", "reason": "incomplete_file_read"}])
+
+    def test_partial_read_then_eof_retains_accounting_without_hash(self):
+        with patch.object(bg.os, "read", side_effect=[b"pri", b""]):
+            report = self.scan()
+        self.assertFalse(report["complete"])
+        self.assertEqual(report["bytes_read"], 3)
+        self.assertEqual(report["files"][0]["reason"], "incomplete_file_read")
+        self.assertNotIn("sha256", report["files"][0])
+        self.assertNotIn("pri", json.dumps(report))
+
+    def test_short_chunks_that_reach_expected_size_are_accepted(self):
+        original_read = os.read
+        with patch.object(bg.os, "read", side_effect=lambda fd, count: original_read(fd, min(count, 3))):
+            report = self.scan()
+        self.assertTrue(report["complete"])
+        self.assertEqual(report["bytes_read"], len(b"print('synthetic')\n"))
+
+    def test_empty_file_is_a_complete_zero_byte_observation(self):
+        (self.project / "safe.py").write_bytes(b"")
+        report = self.scan()
+        self.assertTrue(report["complete"])
+        self.assertEqual(report["bytes_read"], 0)
+        self.assertEqual(report["files"][0]["sha256"], bg.hashlib.sha256(b"").hexdigest())
+
     def test_path_traversal_and_dotpaths_rejected(self):
         for name in ("../outside.py", "./safe.py", "/etc/passwd", ".git/config", "a//b.py", "a/../b.py", "a/./b.py", "a\\b.py", ".env", "a/", "\x00.py"):
             with self.subTest(name=name), self.assertRaises(bg.BoundaryError):
