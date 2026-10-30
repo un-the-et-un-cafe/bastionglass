@@ -1,0 +1,1 @@
+{"schema":"bastionglass.traffic.v1","source":"synthetic","events":[{"direction":"out","transport":"tls","destination_policy":"approved","bytes":128},{"direction":"in","transport":"plaintext","destination_policy":"unapproved","bytes":64}]}
