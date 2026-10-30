@@ -2,7 +2,15 @@
 
 Candidate date: 2026-10-30. This file records reproducible local checks, not certification.
 
-## Executed
+## Current private read-completeness increment
+
+- `python3 -m unittest discover -s tests -v`: **46 tests passed** on Python 3.12.14.
+- Four added tests exercise unexpected EOF without a metadata change, partial-read accounting without a returned hash, legitimate short chunks and empty files.
+- `python3 -m py_compile bastionglass.py tests/test_bastionglass.py` and `git diff --check`: passed.
+- The unchanged 42-test suite below remains historical evidence for the earlier candidate. This increment requires independent review before publication.
+- Runtime patch-review flags remain unresolved; these trusted synthetic tests do not establish that the interpreter or host is fully patched.
+
+## Earlier candidate checks
 
 - `python3 -m unittest discover -s tests -v`: **42 tests passed**.
 - `python3 -m py_compile bastionglass.py tests/test_bastionglass.py`: passed.

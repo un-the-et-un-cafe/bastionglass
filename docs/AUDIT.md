@@ -28,6 +28,7 @@ All named tests are in `tests/test_bastionglass.py`.
 | Traversal/symlink/hardlink exclusion | `test_path_traversal_and_dotpaths_rejected`, all symlink tests, `test_hardlink_rejected` |
 | Nonblocking special-file rejection | `test_fifo_does_not_block`, `test_directory_is_not_source` |
 | File and total read limits | `test_file_size_cap`, `test_total_cap_marks_incomplete`, `test_failed_read_bytes_still_count_against_total_budget` |
+| Complete-read accounting | `test_early_eof_is_not_a_complete_observation`, `test_partial_read_then_eof_retains_accounting_without_hash`, `test_short_chunks_that_reach_expected_size_are_accepted`, `test_empty_file_is_a_complete_zero_byte_observation` |
 | Race observations | `test_opened_descriptor_survives_path_replacement_without_following_link`, `test_content_mutation_during_read_is_rejected`, `test_symlink_swap_before_open_is_rejected` |
 | Redacted reports/errors | `test_safe_scan_has_no_contents_or_paths`, `test_missing_file_error_is_fixed_and_redacted`, `test_invalid_cli_arguments_are_redacted` |
 | Explicit baseline binding | `test_hash_baseline_is_read_only_and_explicit`, `test_baseline_scope_or_incomplete_cannot_match` |
