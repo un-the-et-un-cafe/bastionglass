@@ -2,6 +2,13 @@
 
 Candidate date: 2026-10-30. This file records reproducible local checks, not certification.
 
+## Private linked OpenSSL advisory increment — 2026-10-31
+
+- 54 local unit tests passed, including eight new tests: older upstream 3.5 versions, fixed boundary, uncovered series, invalid/vendor/prerelease/oversized input, standard-date normalization, linked-library provenance, private-suffix non-echoing and CLI review-flag behavior.
+- Compilation and patch whitespace checks passed. Inputs are synthetic; no malicious certificate or exploit was executed.
+- Official advisory independently read before implementation. This rule does not establish application exposure or vendor backport status and deliberately does not cover every affected upstream series.
+- Pending independent review and hosted CI for this exact increment; earlier hosted results do not apply to this change. Actual runtime observations remain private.
+
 ## GitHub checks
 
 The pull-request workflow runs unit tests, Python compilation and patch whitespace checks on standard Ubuntu 24.04 runners with Python 3.12 and 3.14. This samples the documented Python 3.12+ range; it is not an exhaustive platform matrix. Python patch versions are resolved from the latest available patch within each selected minor and printed in the run log.
