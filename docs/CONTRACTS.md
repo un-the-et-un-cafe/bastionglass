@@ -43,3 +43,13 @@ Malformed UTF-8/JSON, duplicate keys, nonfinite constants, oversized/deep inputs
 - Never place arbitrary input, source text, credential values, URLs, headers or OS error strings into reports.
 - An inventory method must not import inspected project code, execute package hooks or shell out to arbitrary commands.
 - Changing a default from read-only to mutation, network capture or reporting is a new capability requiring separate owner authorization and a new threat review.
+
+## Dated OpenSSL advisory review
+
+The 2026-10-31 rule reviews **only upstream OpenSSL 3.5** against the 3.5.9 fix for CVE-2026-35189 in the [official 2026-09-29 advisory](https://openssl-library.org/news/secadv/20260929.txt). This Low-severity issue concerns disproportionate memory allocation while processing relative CRL distribution points in certificates; clients and servers requesting client certificates may be exposed. The affected code is outside the FIPS module boundary. Other affected upstream series exist but are deliberately not evaluated by this rule.
+
+`openssl_advisory_observation` returns a dated version-review observation, never a proven vulnerability or infection. The runtime source is Python's linked `ssl` library, **not** the `openssl` command-line executable. No command, certificate parsing, network connection, package inspection or exploit is performed. Vendor backports and application exposure remain `unknown`, even when the upstream version is below the fixed boundary.
+
+Upstream 3.5 versions below 3.5.9 yield `patch_status_review_required`; 3.5.9+ yield only `no_older_version_flag_for_this_rule`. Other series yield `unknown_series_not_covered`. Missing, vendor-suffixed, prerelease or unparseable version text yields `unknown_unparseable_version`. Parsing is bounded; the raw text is never emitted. `runtime.openssl` now contains a normalized numeric version or `unknown`, rather than the raw library description. Consumers must not depend on the former raw formatting.
+
+The existing CLI returns 1 for a patch-review flag. Unknown statuses remain explicit in JSON and do not independently alter the existing exit-code policy; exit 0 is not an assurance of safety. No host upgrade, automatic remediation or external reporting is enabled. This snapshot requires later human/source review; it is not a live advisory feed.

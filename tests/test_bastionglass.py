@@ -285,7 +285,67 @@ class Suite(unittest.TestCase):
         for advisory in observation["advisories"]:
             self.assertEqual(advisory["vendor_backports"], "unknown")
             self.assertTrue(advisory["not_a_comprehensive_vulnerability_assessment"])
-            self.assertEqual(advisory["evidence_checked_on"], "2026-10-30")
+            self.assertEqual(advisory["evidence_checked_on"], "2026-10-31" if advisory["component"] == "openssl" else "2026-10-30")
+
+    def test_openssl_35_older_versions_require_review(self):
+        for version in ("3.5.0", "3.5.7", "3.5.8"):
+            with self.subTest(version=version):
+                result = bg.openssl_advisory_observation("OpenSSL " + version)
+                self.assertEqual(result["status"], "patch_status_review_required")
+                self.assertEqual(result["observed_version"], version)
+
+    def test_openssl_fixed_boundary_only_clears_version_flag(self):
+        for version in ("3.5.9", "3.5.10"):
+            result = bg.openssl_advisory_observation("OpenSSL " + version)
+            self.assertEqual(result["status"], "no_older_version_flag_for_this_rule")
+            self.assertEqual(result["vendor_backports"], "unknown")
+            self.assertEqual(result["application_exposure"], "unknown")
+            self.assertNotIn("safe", json.dumps(result))
+
+    def test_openssl_other_series_remain_unknown(self):
+        for version in ("3.0.23", "3.4.8", "3.6.5", "4.0.3", "9.0.0"):
+            result = bg.openssl_advisory_observation("OpenSSL " + version)
+            self.assertEqual(result["status"], "unknown_series_not_covered")
+
+    def test_openssl_unparseable_and_vendor_strings_not_echoed(self):
+        for value in (None, 35, "", "LibreSSL 3.5.9", "OpenSSL 3.5.9-dev",
+                      "OpenSSL 3.5.8-vendor-backport", "OpenSSL 3.5.9 /private/synthetic-marker",
+                      "OpenSSL 3.5.9\n", "OpenSSL " + "9" * 5000):
+            result = bg.openssl_advisory_observation(value)
+            self.assertEqual(result["status"], "unknown_unparseable_version")
+            self.assertEqual(result["observed_version"], "unknown")
+            self.assertNotIn("synthetic-marker", json.dumps(result))
+
+    def test_openssl_standard_date_is_not_echoed(self):
+        result = bg.openssl_advisory_observation("OpenSSL 3.5.9 29 Sep 2026")
+        self.assertEqual(result["observed_version"], "3.5.9")
+        self.assertNotIn("29 Sep", json.dumps(result))
+
+    def test_openssl_runtime_uses_linked_library_not_cli(self):
+        with patch.object(bg.ssl, "OPENSSL_VERSION", "OpenSSL 3.5.8 29 Sep 2026"):
+            report = bg.runtime_observation()
+        result = report["advisories"][-1]
+        self.assertEqual(report["openssl"], "3.5.8")
+        self.assertEqual(result["observation_source"], "python_ssl_linked_library")
+        self.assertEqual(result["status"], "patch_status_review_required")
+
+    def test_openssl_runtime_never_echoes_private_version_suffix(self):
+        with patch.object(bg.ssl, "OPENSSL_VERSION", "OpenSSL 3.5.8 /private/synthetic-marker"):
+            report = bg.runtime_observation()
+        self.assertEqual(report["openssl"], "unknown")
+        self.assertNotIn("synthetic-marker", json.dumps(report))
+
+    def test_openssl_review_flag_affects_cli_exit_without_vulnerability_verdict(self):
+        import io
+        from contextlib import redirect_stdout
+        with patch.object(bg.sys, "version_info", (3, 12, 16)), \
+             patch.object(bg.expat, "version_info", (2, 9, 0)):
+            for version, expected in (("OpenSSL 3.5.8", 1), ("OpenSSL 3.5.9", 0)):
+                output = io.StringIO()
+                with patch.object(bg.ssl, "OPENSSL_VERSION", version), redirect_stdout(output):
+                    code = bg.main(["--workspace", str(self.workspace), "--project", "project", "--file", "safe.py"])
+                self.assertEqual(code, expected)
+                self.assertEqual(json.loads(output.getvalue())["security_verdict"], "not_provided")
 
     def test_no_subprocess_or_network_imports(self):
         source = Path(bg.__file__).read_text()

@@ -174,6 +174,31 @@ def inspect_source(raw: bytes) -> dict:
     return {"sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw), "findings": findings}
 
 
+def openssl_advisory_observation(version_text: object) -> dict:
+    """Bounded upstream 3.5 version review, not an exposure/backport verdict."""
+    match = None
+    if isinstance(version_text, str) and len(version_text) <= 80:
+        match = re.fullmatch(
+            r"OpenSSL ([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})(?: [0-9]{1,2} [A-Za-z]{3} [0-9]{4})?",
+            version_text,
+        )
+    version = tuple(map(int, match.groups())) if match else None
+    status = "unknown_unparseable_version"
+    if version is not None:
+        status = "unknown_series_not_covered"
+        if version[:2] == (3, 5):
+            status = "patch_status_review_required" if version < (3, 5, 9) else "no_older_version_flag_for_this_rule"
+    return {
+        "component": "openssl", "observation_source": "python_ssl_linked_library",
+        "observed_version": ".".join(map(str, version)) if version else "unknown",
+        "advisory_id": "CVE-2026-35189", "status": status,
+        "source": "https://openssl-library.org/news/secadv/20260929.txt",
+        "evidence_checked_on": "2026-10-31", "covered_series": "3.5",
+        "upstream_fixed_version": "3.5.9", "vendor_backports": "unknown",
+        "application_exposure": "unknown", "not_a_comprehensive_vulnerability_assessment": True,
+    }
+
+
 def runtime_observation() -> dict:
     python = tuple(sys.version_info[:3])
     expat_version = tuple(expat.version_info)
@@ -184,7 +209,9 @@ def runtime_observation() -> dict:
     ):
         status = "patch_status_review_required" if observed[:len(known_series)] == known_series and observed < fixed else "no_older_version_flag_for_this_rule"
         advisories.append({"component": component, "status": status, "source": url, "evidence_checked_on": "2026-10-30", "vendor_backports": "unknown", "not_a_comprehensive_vulnerability_assessment": True})
-    return {"python": ".".join(map(str, python)), "expat": ".".join(map(str, expat_version)), "openssl": ssl.OPENSSL_VERSION, "advisories": advisories}
+    openssl = openssl_advisory_observation(getattr(ssl, "OPENSSL_VERSION", None))
+    advisories.append(openssl)
+    return {"python": ".".join(map(str, python)), "expat": ".".join(map(str, expat_version)), "openssl": openssl["observed_version"], "advisories": advisories}
 
 
 def scan(workspace: str, project: str, files: list[str]) -> dict:
